@@ -1,0 +1,23 @@
+{
+  "apiVersion": 1,
+  "id": "classisland",
+  "name": "ClassIsland 课表",
+  "version": "0.1.0",
+  "main": "main.mjs",
+  "icon": "assets/icon.png",
+  "description": "连接 ClassIsland：自动发现课表数据、读课表、结构化编辑（单节换课/临时层换课/预定），运行中换课表走官方 IPC 实时生效，附带连接自检与 URI 导航。支持 Agent 用自然语言改课表。",
+  "author": "hali",
+  "repository": "https://github.com/haliChina/SecAgent-ClassIsland",
+  "permissions": [
+    "agent.tools",
+    "agent.skills",
+    "agent.settings"
+  ],
+  "settingsPages": [
+    {
+      "id": "classisland-settings",
+      "title": "ClassIsland 连接",
+      "description": "数据目录、IPC 管道与写入守卫。"
+    }
+  ]
+}
