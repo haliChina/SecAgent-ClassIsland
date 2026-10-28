@@ -1,6 +1,6 @@
 {
   "name": "secagent-classisland-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "SecAgent plugin: ClassIsland timetable integration (read/edit/switch/IPC).",

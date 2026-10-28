@@ -3,8 +3,8 @@
 export const SETTING_FIELDS = [
   { key: "dataDir", group: "connection", type: "string", default: "",
     label: "ClassIsland 数据目录（留空自动发现）",
-    placeholder: "%APPDATA%\\ClassIsland\\Data",
-    help: "安装版默认 %APPDATA%\\ClassIsland\\Data；便携版填程序目录下的 data。自动发现失败时必填。" },
+    placeholder: "D:/ApowerREC/ClassIsland/data",
+    help: "安装版默认 %APPDATA%/ClassIsland/Data；便携版填程序目录下的 data。⚠ 请用正斜杠 / 或双反斜杠 \\：单反斜杠会被配置层转义吞掉（实测 D:\\A → D:A）。自动发现失败时必填。" },
   { key: "pipeName", group: "connection", type: "string", default: "ClassIsland.IPC.v2.Server",
     label: "IPC 管道名",
     help: "官方固定值 ClassIsland.IPC.v2.Server（1.5.3+ 与 2.x 相同），一般不要改。" },

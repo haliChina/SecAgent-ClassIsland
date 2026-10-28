@@ -29,10 +29,18 @@ export function validateProfile(p) {
     }
   }
   if (p.OrderedSchedules && typeof p.OrderedSchedules !== "object") push("OrderedSchedules 不是字典");
-  if (p.IsOverlayClassPlanEnabled && typeof p.OverlayClassPlanId !== "string") {
-    push("临时层已启用但 OverlayClassPlanId 缺失");
+  // 实测放宽：真实数据存在 IsOverlayClassPlanEnabled=true 而 OverlayClassPlanId=null
+  // （官方清理逻辑不彻底的残留），ClassIsland 本体能容忍——降为 warning，不阻塞读写。
+  const warnings = [];
+  if (p.IsOverlayClassPlanEnabled) {
+    const oid = p.OverlayClassPlanId;
+    if (oid === null || oid === undefined || oid === "") {
+      warnings.push("IsOverlayClassPlanEnabled=true 但 OverlayClassPlanId 为空（历史残留，不影响读取）");
+    } else if (typeof oid !== "string") {
+      push("OverlayClassPlanId 不是字符串/GUID");
+    }
   }
-  return { ok: errors.length === 0, errors };
+  return { ok: errors.length === 0, errors, warnings };
 }
 
 /** 紧凑档案摘要（Agent 可读）。 */

@@ -41,9 +41,17 @@ test("validateProfile：合法档案通过，缺 Id/坏结构失败", () => {
   const bad2 = sampleProfile();
   bad2.ClassPlans = ["x"];
   assert.equal(validateProfile(bad2).ok, false);
+  // 实测放宽：IsOverlayClassPlanEnabled=true + Id 空是历史残留（ClassIsland 可容忍）
   const overlay = sampleProfile();
   overlay.IsOverlayClassPlanEnabled = true;
-  assert.equal(validateProfile(overlay).ok, false); // 缺 OverlayClassPlanId
+  overlay.OverlayClassPlanId = null;
+  const vr = validateProfile(overlay);
+  assert.equal(vr.ok, true); // 不再 fail
+  assert.equal(vr.warnings.length, 1); // 降为 warning
+  const overlayBad = sampleProfile();
+  overlayBad.IsOverlayClassPlanEnabled = true;
+  overlayBad.OverlayClassPlanId = 12345; // 非字符串仍 fail
+  assert.equal(validateProfile(overlayBad).ok, false);
 });
 
 test("summarizeProfile：科目/课表/临时层视图", () => {

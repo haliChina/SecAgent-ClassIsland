@@ -9,6 +9,7 @@ import { createIpcClient } from "./ipc/client.mjs";
 import { MEMBERS, DEFAULT_PIPE } from "./ipc/api.mjs";
 import { createWinTransport } from "./ipc/transport-win.mjs";
 import { validateProfile, summarizeProfile, resolvePlanForDate, describePlan } from "./model.mjs";
+import path from "node:path";
 
 export function createService({ config, discovery, store, platform = process.platform, now = () => new Date(), requestTimeoutMs = 8000, logger = () => {} } = {}) {
   const pipeName = config.pipeName || DEFAULT_PIPE;
@@ -67,13 +68,22 @@ export function createService({ config, discovery, store, platform = process.pla
       ipc: null,
       profiles: [],
       currentProfile: null,
+      settingsPath: null,
+      warnings: [],
       errors: []
     };
     if (d.ok) {
       out.profiles = await discovery.listProfiles(d.profilesDir);
       const sel = await discovery.readSelectedProfile(d.dataRoot);
-      if (sel.ok) out.currentProfile = sel.selectedProfile;
-      else out.errors.push(`Settings.json：${sel.error}`);
+      if (sel.ok) {
+        out.currentProfile = sel.selectedProfile;
+        out.settingsPath = sel.settingsPath;
+      } else if (sel.warningOnly) {
+        out.warnings.push(`Settings.json：${sel.error}`);
+        out.currentProfile = "Default.json"; // 兜底
+      } else {
+        out.errors.push(`Settings.json：${sel.error}`);
+      }
     } else {
       out.errors.push(d.detail || d.error || "数据目录未找到");
     }
@@ -99,7 +109,7 @@ export function createService({ config, discovery, store, platform = process.pla
     const v = validateProfile(r.data);
     if (!v.ok) return { ok: false, error: `档案结构异常：${v.errors.join("；")}`, code: "PROFILE_INVALID", file: full };
     const view = summarizeProfile(r.data, { currentPath: file });
-    const result = { ok: true, file: full, profile: file, view };
+    const result = { ok: true, file: full, profile: file, view, warnings: v.warnings || [] };
     if (day) {
       const resolved = resolvePlanForDate(r.data, day);
       const dayOut = { date: day, source: resolved.source, weekday: resolved.weekday || null };
@@ -189,8 +199,11 @@ export function createService({ config, discovery, store, platform = process.pla
       // 用户明确要求文件直写：提示风险但仍执行（写 Settings 而非 Profile，冲突面小）
       // —— Settings 的内存覆盖风险同样存在，警告里说清。
     }
-    const settingsFile = `${d.dataRoot}/Config/Settings.json`;
+    const sel = await discovery.readSelectedProfile(d.dataRoot);
+    // 找不到既有 Settings.json 时，写标准位置 Config/Settings.json（新建）
+    const settingsFile = sel.ok ? sel.settingsPath : path.join(d.dataRoot, "Config", "Settings.json");
     const w = await store.writeSelected(settingsFile, to);
+    if (!sel.ok && w.ok) w.created = true;
     if (!w.ok) return { ok: false, error: w.error, code: "WRITE_FAIL" };
     return {
       ok: true, via: "file", profile: to, backup: w.backup,

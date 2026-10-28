@@ -2,7 +2,7 @@
   "apiVersion": 1,
   "id": "classisland",
   "name": "ClassIsland 课表",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "main.mjs",
   "icon": "assets/icon.png",
   "description": "连接 ClassIsland：自动发现课表数据、读课表、结构化编辑（单节换课/临时层换课/预定），运行中换课表走官方 IPC 实时生效，附带连接自检与 URI 导航。支持 Agent 用自然语言改课表。",

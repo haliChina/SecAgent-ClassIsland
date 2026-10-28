@@ -4,6 +4,7 @@
 
 ## 硬纪律
 
+0. **设置入口**：本插件的配置（dataDir 等）在 **SecAgent 设置 → 插件管理 → ClassIsland 课表卡片**里改，不要打开别的插件控制台。让用户填 dataDir 时叮嘱：**用正斜杠 `D:/...` 或双反斜杠**，单反斜杠会被转义吞掉。
 1. **先 status 后操作**：首次接触、找不到数据、任何工具报错——先 `classisland_status`。它报告数据目录、档案清单、ClassIsland 是否运行、IPC 是否可用。
 2. **运行中不写文件**：ClassIsland 运行时改磁盘档案会被内存覆盖（它不监视文件）。写入类操作收到 `RUNNING_GUARD` 是预期行为：换课表用 `classisland_switch_profile`（IPC 实时生效）；临时换课建议用户稍后处理或先用 switch 切档案。
 3. **改前读、改后验**：编辑前 `classisland_read` 定位（科目名/课表名/第几节），编辑后再次 read 验证（收尾观察：动作被接受≠生效）。
