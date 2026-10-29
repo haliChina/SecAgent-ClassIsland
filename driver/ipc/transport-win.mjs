@@ -14,11 +14,22 @@ import { randomUUID } from "node:crypto";
 
 const PIPE_PREFIX = "\\\\.\\pipe\\";
 
+/** R77：管道名归一化（裸名 → \\.\pipe\ 裸名）。导出供测试。 */
+export function normalizePipeName(name) {
+  return String(name || "").startsWith(PIPE_PREFIX) ? String(name) : PIPE_PREFIX + String(name || "");
+}
+
 export function createWinTransport({ logger = () => {} } = {}) {
 
   async function connectSend(target) {
+    // 实测坑（R77）：裸名不加 \\.\pipe\ 前缀时，fs.open 把它当相对路径在
+    // cwd（C:\Program Files\SecAgent）下解析 → EPERM，且错误信息里没有
+    // "pipe" 字样 → probeRunning 的 notFound 分类失效 → RUNNING 探测
+    // 死路（用户换课被「无法确认是否运行」拒绝）。listen 侧一直有前缀，
+    // connect 侧漏了。
+    const full = normalizePipeName(target);
     try {
-      const fh = await fsp.open(target, "w");
+      const fh = await fsp.open(full, "w");
       return {
         write: async (bytes) => { await fh.write(bytes, 0, bytes.length, null); },
         close: () => { fh.close().catch(() => {}); }
@@ -43,7 +54,7 @@ export function createWinTransport({ logger = () => {} } = {}) {
         const CloseHandle = kernel32.func("__stdcall", "CloseHandle", "bool", ["void*"]);
         const GENERIC_WRITE = 0x40000000;
         const OPEN_EXISTING = 3;
-        const handle = CreateFileW(target, GENERIC_WRITE, 0, null, OPEN_EXISTING, 0, null);
+        const handle = CreateFileW(full, GENERIC_WRITE, 0, null, OPEN_EXISTING, 0, null);
         if (!handle) throw primaryError;
         return {
           write: async (bytes) => {

@@ -64,10 +64,13 @@ export async function runDoctor({ service, discovery, store, platform = process.
 
   add("running", "ClassIsland 进程/管道", async () => {
     const r = await service.probeRunning();
+    // R77 修正：running === null（探测本身出错，如 EPERM）不能算 ✓——
+    // 实测用户截图里「[✓] ClassIsland 进程/管道：EPERM: ...」把探测失败
+    // 当通过展示，掩盖了 connectSend 裸管道名 bug。
     return {
-      ok: r.checked,
-      detail: r.running === true ? "运行中（IPC 管道存在）" : r.running === false ? "未运行" : (r.error || "未知"),
-      fix: null
+      ok: r.running !== null,
+      detail: r.running === true ? "运行中（IPC 管道存在）" : r.running === false ? "未运行" : `探测失败：${r.error || "未知"}`,
+      fix: r.running === null ? "管道探测异常（权限/路径问题）——把插件升级到 1.1.1+（管道名 \\.\pipe\ 前缀修复），或检查 SecAgent 安装目录权限。" : null
     };
   });
 

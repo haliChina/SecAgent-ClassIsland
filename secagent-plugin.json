@@ -2,7 +2,7 @@
   "apiVersion": 1,
   "id": "classisland-connector",
   "name": "ClassIsland联动",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "main.mjs",
   "icon": "icon.svg",
   "description": "让 SecAgent 帮你操作 ClassIsland：查课表、换课/占课/调休、切档案、改组件与设置。CI 端「SecAgent 联动」插件提供联动工具目录；本机直连通道（官方 IPC）支持运行中实时切档案与临时层，改课表立即生效。设置可在 SecAgent 设置页直接调节。",

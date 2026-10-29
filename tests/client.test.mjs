@@ -178,3 +178,18 @@ test("invokeModel 的 args 映射：undefined → null 占位", () => {
   assert.equal(m.a[0], null);
   assert.deepEqual(m.a[1], { v: "s" });
 });
+
+// —— R77：管道名归一化（connectSend 裸名坑——EPERM 根修） ——
+test("normalizePipeName：裸名加 \\.\pipe\ 前缀、带前缀不动（R77 实测 EPERM 根因）", async () => {
+  const { normalizePipeName } = await import("../driver/ipc/transport-win.mjs");
+  assert.equal(normalizePipeName("ClassIsland.IPC.v2.Server"), "\\\\.\\pipe\\ClassIsland.IPC.v2.Server", "裸名（配置默认形态）必须加前缀");
+  assert.equal(normalizePipeName("\\\\.\\pipe\\ClassIsland.IPC.v2.Server"), "\\\\.\\pipe\\ClassIsland.IPC.v2.Server", "带前缀不重复加");
+  // 旧 bug 形态回归断言：归一化结果绝不能是裸名（fs.open 会当 cwd 相对路径 → EPERM）
+  assert.ok(normalizePipeName("ClassIsland.IPC.v2.Server").startsWith("\\\\.\\pipe\\"), "结果必须带前缀");
+});
+
+test("normalizePipeName：空值防御", async () => {
+  const { normalizePipeName } = await import("../driver/ipc/transport-win.mjs");
+  assert.equal(normalizePipeName(""), "\\\\.\\pipe\\");
+  assert.equal(normalizePipeName(null), "\\\\.\\pipe\\");
+});
