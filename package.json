@@ -1,9 +1,9 @@
 {
-  "name": "secagent-classisland-plugin",
-  "version": "0.1.1",
+  "name": "secagent-classisland-connector-plugin",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "SecAgent plugin: ClassIsland timetable integration (read/edit/switch/IPC).",
+  "description": "SecAgent plugin: ClassIsland connector (IPC + timetable read/edit/switch).",
   "scripts": {
     "test": "node --test tests/",
     "check": "node --check main.mjs && node --check driver/model.mjs && node --check driver/discovery.mjs && node --check driver/store.mjs && node --check driver/plan-ops.mjs && node --check driver/service.mjs && node --check driver/doctor.mjs && node --check driver/ipc/proto.mjs && node --check driver/ipc/api.mjs && node --check driver/ipc/client.mjs && node --check driver/ipc/transport-win.mjs && node --check settings/config-schema.mjs",

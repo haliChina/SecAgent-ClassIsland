@@ -1,6 +1,9 @@
 // 设置参数的单一事实源。
 
 export const SETTING_FIELDS = [
+  { key: "baseUrl", group: "companion", type: "string", default: "http://127.0.0.1:18789",
+    label: "CI 端联动服务地址",
+    help: "ClassIsland 端「SecAgent 联动」插件监听的 HTTP 服务（默认 127.0.0.1:18789）。改完保存即按新地址重连。" },
   { key: "dataDir", group: "connection", type: "string", default: "",
     label: "ClassIsland 数据目录（留空自动发现）",
     placeholder: "D:/ApowerREC/ClassIsland/data",
@@ -21,7 +24,8 @@ export const SETTING_FIELDS = [
 ];
 
 export const SETTING_GROUPS = [
-  { id: "connection", title: "连接", description: "数据目录与 IPC 通道。" },
+  { id: "companion", title: "CI 端联动", description: "与 ClassIsland 端「SecAgent 联动」插件的 HTTP 连接。" },
+  { id: "connection", title: "本机直连", description: "数据目录与官方 IPC 通道（换课实时生效）。" },
   { id: "safety", title: "安全", description: "写入守卫与备份策略。" }
 ];
 

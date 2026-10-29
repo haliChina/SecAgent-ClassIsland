@@ -12,7 +12,7 @@ import { validateProfile, summarizeProfile, resolvePlanForDate, describePlan } f
 import path from "node:path";
 
 export function createService({ config, discovery, store, platform = process.platform, now = () => new Date(), requestTimeoutMs = 8000, logger = () => {} } = {}) {
-  const pipeName = config.pipeName || DEFAULT_PIPE;
+  const pipeOf = () => config.pipeName || DEFAULT_PIPE; // 管道名热读（设置页改完立即生效）
 
   function isWin() { return platform === "win32"; }
 
@@ -21,7 +21,7 @@ export function createService({ config, discovery, store, platform = process.pla
     if (!isWin()) return { running: false, checked: false, reason: "非 Windows 平台" };
     try {
       const transport = createWinTransport({ logger });
-      const send = await transport.connectSend(pipeName);
+      const send = await transport.connectSend(pipeOf());
       send.close();
       return { running: true, checked: true };
     } catch (e) {
@@ -35,8 +35,12 @@ export function createService({ config, discovery, store, platform = process.pla
   // —— IPC ——
   async function withIpc(fn, opts = {}) {
     if (!isWin()) return { ok: false, error: "IPC 仅 Windows 可用", code: "PLATFORM" };
+    // 设置页可整体关闭 IPC 通道（排查环境问题时用）：写路径随之全部 fail-closed。
+    if (config.ipcEnabled === false) return { ok: false, error: "IPC 通道已在设置中关闭", code: "IPC_DISABLED" };
     const transport = createWinTransport({ logger });
-    const client = createIpcClient({ pipeName, transport, requestTimeoutMs: opts.timeoutMs || requestTimeoutMs, logger });
+    // 超时从 config 热读（设置页改完立即生效），requestTimeoutMs 参数仅作缺省兜底
+    const timeout = opts.timeoutMs || Number(config.requestTimeoutMs) || requestTimeoutMs;
+    const client = createIpcClient({ pipeName: pipeOf(), transport, requestTimeoutMs: timeout, logger });
     try {
       const conn = await client.connect();
       if (!conn.ok) return conn;
